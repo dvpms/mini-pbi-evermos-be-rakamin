@@ -138,7 +138,7 @@ Sebelum menjalankan proyek ini, pastikan sistem Anda telah terpasang:
 ### 1. Clone Repositori
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/dvpms/mini-pbi-evermos-be-rakamin.git
 cd mini-project-pbi
 ```
 
