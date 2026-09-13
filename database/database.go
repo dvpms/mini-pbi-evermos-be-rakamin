@@ -46,8 +46,12 @@ func ConnectDatabase() *gorm.DB {
 
 	log.Println("Database connection established successfully")
 
-	// Run auto migrations
-	Migrate(db)
+	// Run auto migrations conditionally if enabled in environment
+	if os.Getenv("AUTO_MIGRATE") == "true" {
+		Migrate(db)
+	} else {
+		log.Println("Database auto-migration skipped (AUTO_MIGRATE is not true)")
+	}
 
 	return db
 }

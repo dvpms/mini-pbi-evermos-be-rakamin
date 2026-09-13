@@ -19,18 +19,23 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	userRepo := repositories.NewUserRepository(db)
 	tokoRepo := repositories.NewTokoRepository(db)
 	alamatRepo := repositories.NewAlamatRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(db)
 
 	// Services
 	authService := services.NewAuthService(userRepo, tokoRepo)
 	userService := services.NewUserService(userRepo)
 	alamatService := services.NewAlamatService(alamatRepo)
 	provCityService := services.NewProvCityService()
+	tokoService := services.NewTokoService(tokoRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	alamatHandler := handlers.NewAlamatHandler(alamatService)
 	provCityHandler := handlers.NewProvCityHandler(provCityService)
+	tokoHandler := handlers.NewTokoHandler(tokoService)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	// Auth Routes (Public)
 	auth := router.Group("/auth")
@@ -62,6 +67,29 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 				"user_id": userID,
 			})
 		})
+	}
+
+	// Toko Routes (Protected JWT)
+	toko := router.Group("/toko", middleware.AuthMiddleware())
+	{
+		toko.GET("/my", tokoHandler.GetMyToko)
+		toko.GET("/:id_toko", tokoHandler.GetTokoByID)
+		toko.GET("", tokoHandler.GetAllToko)
+		toko.PUT("/:id_toko", tokoHandler.UpdateToko)
+	}
+
+	// Category Routes (Public for GET, Admin Only for Mutations)
+	category := router.Group("/category")
+	{
+		category.GET("", categoryHandler.GetAllCategories)
+		category.GET("/:id", categoryHandler.GetCategoryByID)
+	}
+
+	categoryAdmin := router.Group("/category", middleware.AuthMiddleware(), middleware.AdminOnly())
+	{
+		categoryAdmin.POST("", categoryHandler.CreateCategory)
+		categoryAdmin.PUT("/:id", categoryHandler.UpdateCategory)
+		categoryAdmin.DELETE("/:id", categoryHandler.DeleteCategory)
 	}
 
 	// Province & City Routes (Public)
