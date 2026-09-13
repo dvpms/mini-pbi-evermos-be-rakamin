@@ -138,14 +138,20 @@ cd mini-project-pbi
 ```
 
 ### 2. Konfigurasi Environment (`.env`)
-Pastikan file `.env` berada di root direktori dengan konfigurasi berikut:
 ```env
-DATABASE_URL="avnadmin:<password>@tcp(mysql-d8fc1a9-mini-pbi-rakamin.j.aivencloud.com:11758)/defaultdb?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify"
+# Database Configuration
+DB_USER=root
+DB_PASS=your_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=evermos_mini
+
+# Application Configuration
 JWT_SECRET="secret_evermos_mini_project_key_2025"
 PORT="8080"
 AUTO_MIGRATE=false
 ```
-> **Catatan**: Ubah `AUTO_MIGRATE=true` jika Anda menghubungkan ke database baru yang kosong untuk menjalankan auto-migration skema tabel awal.
+> **Catatan**: Ubah `AUTO_MIGRATE=true` jika Anda menghubungkan ke database baru yang kosong untuk menjalankan auto-migration skema tabel awal. Anda juga dapat menggunakan format `DATABASE_URL` jika menggunakan cloud database string (e.g. Aiven Cloud).
 
 ### 3. Unduh Dependencies
 ```bash

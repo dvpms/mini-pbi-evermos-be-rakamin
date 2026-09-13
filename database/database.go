@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -15,12 +16,19 @@ import (
 
 func ConnectDatabase() *gorm.DB {
 	_ = godotenv.Load()
-	if os.Getenv("DATABASE_URL") == "" {
-		_ = godotenv.Load("../.env")
-	}
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Fatal("DATABASE_URL is not set in environment")
+		dbUser := os.Getenv("DB_USER")
+		dbPass := os.Getenv("DB_PASS")
+		dbHost := os.Getenv("DB_HOST")
+		dbPort := os.Getenv("DB_PORT")
+		dbName := os.Getenv("DB_NAME")
+
+		if dbUser == "" || dbHost == "" || dbPort == "" || dbName == "" {
+			log.Fatal("Konfigurasi database di file .env belum lengkap. Harap pastikan DB_USER, DB_PASS, DB_HOST, DB_PORT, dan DB_NAME telah diisi.")
+		}
+
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
