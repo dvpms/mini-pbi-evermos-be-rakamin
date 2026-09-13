@@ -12,6 +12,7 @@ Proyek ini merupakan implementasi RESTful API Backend e-commerce untuk **Virtual
 ---
 
 ## 📑 Daftar Isi
+
 1. [Fitur Utama](#-fitur-utama)
 2. [Arsitektur & Struktur Direktori](#-arsitektur--struktur-direktori)
 3. [Teknologi yang Digunakan](#-teknologi-yang-digunakan)
@@ -50,10 +51,8 @@ mini-project-pbi/
 ├── config/             # Konfigurasi aplikasi & JWT helpers
 ├── database/           # Inisialisasi GORM connection pool & database auto-migration
 ├── docs/               # Dokumentasi pengujian, task checklist, dan spesifikasi soal
-│   ├── code-standar.md
-│   ├── soal.md
 │   ├── testing-guide.md
-│   └── tasks/
+│   
 ├── handlers/           # Presentation Layer (HTTP Request/Response Controllers)
 │   ├── alamat_handler.go
 │   ├── auth_handler.go
@@ -123,6 +122,7 @@ mini-project-pbi/
 ## 📋 Persyaratan Sistem
 
 Sebelum menjalankan proyek ini, pastikan sistem Anda telah terpasang:
+
 1. **Go** (versi 1.20 atau lebih baru)
 2. **Node.js** & **npm** (opsional, untuk menjalankan Newman CLI)
 3. **Git**
@@ -132,12 +132,14 @@ Sebelum menjalankan proyek ini, pastikan sistem Anda telah terpasang:
 ## ⚙️ Instalasi & Menjalankan Aplikasi
 
 ### 1. Clone Repositori
+
 ```bash
 git clone <repository-url>
 cd mini-project-pbi
 ```
 
 ### 2. Konfigurasi Environment (`.env`)
+
 ```env
 # Database Configuration
 DB_USER=root
@@ -151,17 +153,21 @@ JWT_SECRET="secret_evermos_mini_project_key_2025"
 PORT="8080"
 AUTO_MIGRATE=false
 ```
+
 > **Catatan**: Ubah `AUTO_MIGRATE=true` jika Anda menghubungkan ke database baru yang kosong untuk menjalankan auto-migration skema tabel awal. Anda juga dapat menggunakan format `DATABASE_URL` jika menggunakan cloud database string (e.g. Aiven Cloud).
 
 ### 3. Unduh Dependencies
+
 ```bash
 go mod tidy
 ```
 
 ### 4. Jalankan Server
+
 ```bash
 go run main.go
 ```
+
 Server akan aktif dan siap menerima request pada `http://localhost:8080`.
 
 ---
@@ -170,7 +176,8 @@ Server akan aktif dan siap menerima request pada `http://localhost:8080`.
 
 Koleksi Postman [`mini_project.postman_collection.json`](file:///c:/Users/UDevran/Downloads/Documents/BE-Evermos/code/mini-project-pbi/mini_project.postman_collection.json) telah dilengkapi dengan **36 request** dan **72 assertions** yang mencakup pengujian positif, negatif, isolasi kepemilikan, hingga transaksi stok.
 
-### Menjalankan via Newman CLI:
+### Menjalankan via Newman CLI
+
 ```bash
 # Install Newman jika belum ada
 npm install -g newman
@@ -180,6 +187,7 @@ newman run mini_project.postman_collection.json
 ```
 
 **Hasil Pengujian:**
+
 ```
 ┌─────────────────────────┬───────────────────┬───────────────────┐
 │                         │          executed │            failed │
@@ -200,6 +208,7 @@ newman run mini_project.postman_collection.json
 ## 📡 Katalog Endpoint API
 
 Format standar response JSON:
+
 ```json
 {
     "status": true,
@@ -210,14 +219,16 @@ Format standar response JSON:
 ```
 
 ### 1. Autentikasi (`/auth`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/auth/register` | Mendaftarkan user baru (otomatis membuat toko) | Public |
 | `POST` | `/auth/login` | Login user & mendapatkan token JWT | Public |
 
 ### 2. User & Alamat Kirim (`/user`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/user` | Mendapatkan profil user yang sedang login | Protected (JWT) |
 | `PUT` | `/user` | Mengubah profil user | Protected (JWT) |
 | `GET` | `/user/alamat` | Menampilkan seluruh alamat kirim user login | Protected (JWT) |
@@ -227,16 +238,18 @@ Format standar response JSON:
 | `DELETE` | `/user/alamat/:id` | Menghapus alamat kirim | Protected (JWT) |
 
 ### 3. Toko (`/toko`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/toko/my` | Mendapatkan data toko milik user login | Protected (JWT) |
 | `GET` | `/toko/:id_toko` | Mendapatkan detail toko berdasarkan ID | Protected (JWT) |
 | `GET` | `/toko` | Menampilkan list toko terpaginasi (`page`, `limit`) | Protected (JWT) |
 | `PUT` | `/toko/:id_toko` | Mengubah profil toko & upload logo | Protected (JWT) |
 
 ### 4. Kategori (`/category`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/category` | Mendapatkan seluruh daftar kategori produk | Public |
 | `GET` | `/category/:id` | Mendapatkan detail kategori | Public |
 | `POST` | `/category` | Membuat kategori baru | Admin Only |
@@ -244,8 +257,9 @@ Format standar response JSON:
 | `DELETE` | `/category/:id` | Menghapus kategori | Admin Only |
 
 ### 5. Produk (`/product`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/product` | Filter & pagination produk (`nama_produk`, `category_id`, `toko_id`, `min_harga`, `max_harga`, `page`, `limit`) | Public |
 | `GET` | `/product/:id` | Mendapatkan detail produk lengkap | Public |
 | `POST` | `/product` | Menambah produk baru + upload multiple foto | Protected (JWT) |
@@ -253,15 +267,17 @@ Format standar response JSON:
 | `DELETE` | `/product/:id` | Menghapus produk toko milik user login | Protected (JWT) |
 
 ### 6. Transaksi (`/trx`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/trx` | Checkout pembelian (Atomic DB transaction, pemotongan stok, log snapshot) | Protected (JWT) |
 | `GET` | `/trx` | Menampilkan riwayat transaksi pengguna login | Protected (JWT) |
 | `GET` | `/trx/:id` | Menampilkan detail transaksi pengguna login | Protected (JWT) |
 
 ### 7. Wilayah Indonesia (`/provcity`)
+
 | Method | Endpoint | Deskripsi | Akses |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/provcity/listprovincies` | Daftar seluruh provinsi di Indonesia | Public |
 | `GET` | `/provcity/listcities/:prov_id` | Daftar kota/kabupaten berdasarkan ID provinsi | Public |
 | `GET` | `/provcity/detailprovince/:prov_id` | Detail nama provinsi | Public |
@@ -287,6 +303,7 @@ Format standar response JSON:
 ---
 
 ## 📄 Lisensi & Kontributor
+
 - **Project**: Evermos Virtual Internship Mini Project (Rakamin Academy)
-- **Author**: Muhammad Baskoro / Tim Pengembang Backend
-- **Tahun**: 2025 / 2026
+- **Author**: Devran Perdana Malik
+- **Tahun**: 2026
