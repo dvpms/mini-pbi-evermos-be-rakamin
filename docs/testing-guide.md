@@ -11,10 +11,8 @@ mini-project-pbi/
 ├── config/             # Konfigurasi aplikasi & JWT
 ├── database/           # Inisialisasi koneksi GORM & schema auto-migration
 ├── docs/               # Panduan tugas, spesifikasi soal, dan testing guide
-│   ├── code-standar.md
-│   ├── soal.md
 │   ├── testing-guide.md
-│   └── tasks/
+│   
 ├── handlers/           # HTTP Request handlers (Gin controller layer)
 │   ├── alamat_handler.go
 │   ├── auth_handler.go
