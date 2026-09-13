@@ -44,6 +44,21 @@
 			"key": "test_product_id",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "checkout_alamat_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "checkout_product_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_trx_id",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -1368,6 +1383,355 @@
 								"provcity",
 								"detailcity",
 								"1101"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction",
+			"item": [
+				{
+					"name": "Setup Address for Checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Address setup for checkout succeeded', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.collectionVariables.set('checkout_alamat_id', jsonData.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"judul_alamat\": \"Alamat Pengiriman Trx\",\n    \"nama_penerima\": \"Penerima Trx Newman\",\n    \"no_telp\": \"081234567890\",\n    \"detail_alamat\": \"Gedung Evermos Lt. 5, Bandung\"\n}"
+						},
+						"url": {
+							"raw": "{{local}}/user/alamat",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user",
+								"alamat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Setup Product for Checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Product setup for checkout succeeded', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.collectionVariables.set('checkout_product_id', jsonData.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nama_produk",
+									"value": "Mouse Wireless Ergonomic",
+									"type": "text"
+								},
+								{
+									"key": "category_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "harga_reseller",
+									"value": "120000",
+									"type": "text"
+								},
+								{
+									"key": "harga_konsumen",
+									"value": "165000",
+									"type": "text"
+								},
+								{
+									"key": "stok",
+									"value": "20",
+									"type": "text"
+								},
+								{
+									"key": "deskripsi",
+									"value": "Wireless mouse with ergonomic grip and silent click switches",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/product",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Transaksi (Checkout)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Transaction created with ID returned', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.a('number');",
+									"    pm.collectionVariables.set('test_trx_id', jsonData.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"method_bayar\": \"Transfer Bank Mandiri\",\n    \"alamat_kirim\": {{checkout_alamat_id}},\n    \"detail_trx\": [\n        {\n            \"product_id\": {{checkout_product_id}},\n            \"kuantitas\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{local}}/trx",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"trx"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Transaksi Exceed Stock (Negative Test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 for stock shortage', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Status is false on exceeding stock', function () {",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"method_bayar\": \"Transfer Bank Mandiri\",\n    \"alamat_kirim\": {{checkout_alamat_id}},\n    \"detail_trx\": [\n        {\n            \"product_id\": {{checkout_product_id}},\n            \"kuantitas\": 99999\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{local}}/trx",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"trx"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Transaksi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Transaction list returned', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.data.length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/trx",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"trx"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaksi By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Transaction detail matched', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.data.id).to.eql(Number(pm.collectionVariables.get('test_trx_id')));",
+									"    pm.expect(jsonData.data.kode_invoice).to.not.be.empty;",
+									"    pm.expect(jsonData.data.detail_trx).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/trx/{{test_trx_id}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"trx",
+								"{{test_trx_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaksi Non-Existent (Negative Test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 for non-existent transaction', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Status is false on non-existent transaction', function () {",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/trx/999999",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"trx",
+								"999999"
 							]
 						}
 					},

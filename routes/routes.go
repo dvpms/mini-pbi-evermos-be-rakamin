@@ -21,6 +21,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	alamatRepo := repositories.NewAlamatRepository(db)
 	categoryRepo := repositories.NewCategoryRepository(db)
 	produkRepo := repositories.NewProdukRepository(db)
+	transaksiRepo := repositories.NewTransaksiRepository(db)
 
 	// Services
 	authService := services.NewAuthService(userRepo, tokoRepo)
@@ -30,6 +31,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	tokoService := services.NewTokoService(tokoRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	produkService := services.NewProdukService(produkRepo, tokoRepo)
+	transaksiService := services.NewTransaksiService(transaksiRepo, alamatRepo, produkRepo)
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -39,6 +41,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	tokoHandler := handlers.NewTokoHandler(tokoService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 	produkHandler := handlers.NewProdukHandler(produkService)
+	transaksiHandler := handlers.NewTransaksiHandler(transaksiService)
 
 	// Auth Routes (Public)
 	auth := router.Group("/auth")
@@ -107,6 +110,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		productAuth.POST("", produkHandler.CreateProduk)
 		productAuth.PUT("/:id", produkHandler.UpdateProduk)
 		productAuth.DELETE("/:id", produkHandler.DeleteProduk)
+	}
+
+	// Transaction Routes (Protected JWT)
+	trx := router.Group("/trx", middleware.AuthMiddleware())
+	{
+		trx.POST("", transaksiHandler.CreateTrx)
+		trx.GET("", transaksiHandler.GetAllTrx)
+		trx.GET("/:id", transaksiHandler.GetTrxByID)
 	}
 
 	// Province & City Routes (Public)

@@ -8,7 +8,7 @@ type Transaksi struct {
 	HargaTotal       float64           `gorm:"type:decimal(15,2);not null" json:"harga_total"`
 	KodeInvoice      string            `gorm:"type:varchar(100);uniqueIndex;not null;column:kode_invoice" json:"kode_invoice"`
 	MethodBayar      string            `gorm:"type:varchar(50);not null;column:method_bayar" json:"method_bayar"`
-	AlamatPengiriman uint              `gorm:"not null;column:alamat_kirim_id" json:"-"`
+	AlamatPengiriman uint              `gorm:"not null;column:alamat_pengiriman_id" json:"alamat_pengiriman,omitempty"`
 	UserID           uint              `gorm:"not null;index" json:"user_id,omitempty"`
 	CreatedAt        time.Time         `json:"created_at,omitempty"`
 	UpdatedAt        time.Time         `json:"updated_at,omitempty"`
