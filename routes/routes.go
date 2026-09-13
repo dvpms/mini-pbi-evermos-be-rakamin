@@ -2,7 +2,6 @@ package routes
 
 import (
 	"mini-project-pbi/handlers"
-	"mini-project-pbi/middleware"
 	"mini-project-pbi/repositories"
 	"mini-project-pbi/services"
 
@@ -10,12 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// SetupRoutes registers all application routes and dependency injections
+// SetupRoutes handles dependency injection and registers all modular application routes
 func SetupRoutes(router *gin.Engine, db *gorm.DB) {
-	// Static folder for uploaded files
+	// Static directory for uploaded image assets
 	router.Static("/uploads", "./uploads")
 
-	// Repositories
+	// 1. Data Access Layer (Repositories)
 	userRepo := repositories.NewUserRepository(db)
 	tokoRepo := repositories.NewTokoRepository(db)
 	alamatRepo := repositories.NewAlamatRepository(db)
@@ -23,7 +22,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	produkRepo := repositories.NewProdukRepository(db)
 	transaksiRepo := repositories.NewTransaksiRepository(db)
 
-	// Services
+	// 2. Business Logic Layer (Services)
 	authService := services.NewAuthService(userRepo, tokoRepo)
 	userService := services.NewUserService(userRepo)
 	alamatService := services.NewAlamatService(alamatRepo)
@@ -33,7 +32,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	produkService := services.NewProdukService(produkRepo, tokoRepo)
 	transaksiService := services.NewTransaksiService(transaksiRepo, alamatRepo, produkRepo)
 
-	// Handlers
+	// 3. Presentation Layer (Handlers)
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	alamatHandler := handlers.NewAlamatHandler(alamatService)
@@ -43,89 +42,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	produkHandler := handlers.NewProdukHandler(produkService)
 	transaksiHandler := handlers.NewTransaksiHandler(transaksiService)
 
-	// Auth Routes (Public)
-	auth := router.Group("/auth")
-	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
-	}
-
-	// User Routes (Protected JWT)
-	user := router.Group("/user", middleware.AuthMiddleware())
-	{
-		// Profil
-		user.GET("", userHandler.GetProfile)
-		user.PUT("", userHandler.UpdateProfile)
-
-		// Alamat Kirim
-		user.GET("/alamat", alamatHandler.GetMyAlamat)
-		user.GET("/alamat/:id", alamatHandler.GetAlamatByID)
-		user.POST("/alamat", alamatHandler.CreateAlamat)
-		user.PUT("/alamat/:id", alamatHandler.UpdateAlamat)
-		user.DELETE("/alamat/:id", alamatHandler.DeleteAlamat)
-
-		// Ping test
-		user.GET("/ping", func(c *gin.Context) {
-			userID, _ := c.Get("user_id")
-			c.JSON(200, gin.H{
-				"status":  true,
-				"message": "Auth middleware working",
-				"user_id": userID,
-			})
-		})
-	}
-
-	// Toko Routes (Protected JWT)
-	toko := router.Group("/toko", middleware.AuthMiddleware())
-	{
-		toko.GET("/my", tokoHandler.GetMyToko)
-		toko.GET("/:id_toko", tokoHandler.GetTokoByID)
-		toko.GET("", tokoHandler.GetAllToko)
-		toko.PUT("/:id_toko", tokoHandler.UpdateToko)
-	}
-
-	// Category Routes (Public for GET, Admin Only for Mutations)
-	category := router.Group("/category")
-	{
-		category.GET("", categoryHandler.GetAllCategories)
-		category.GET("/:id", categoryHandler.GetCategoryByID)
-	}
-
-	categoryAdmin := router.Group("/category", middleware.AuthMiddleware(), middleware.AdminOnly())
-	{
-		categoryAdmin.POST("", categoryHandler.CreateCategory)
-		categoryAdmin.PUT("/:id", categoryHandler.UpdateCategory)
-		categoryAdmin.DELETE("/:id", categoryHandler.DeleteCategory)
-	}
-
-	// Product Routes (Public for GET, Protected for Mutations)
-	product := router.Group("/product")
-	{
-		product.GET("", produkHandler.GetAllProduk)
-		product.GET("/:id", produkHandler.GetProdukByID)
-	}
-
-	productAuth := router.Group("/product", middleware.AuthMiddleware())
-	{
-		productAuth.POST("", produkHandler.CreateProduk)
-		productAuth.PUT("/:id", produkHandler.UpdateProduk)
-		productAuth.DELETE("/:id", produkHandler.DeleteProduk)
-	}
-
-	// Transaction Routes (Protected JWT)
-	trx := router.Group("/trx", middleware.AuthMiddleware())
-	{
-		trx.POST("", transaksiHandler.CreateTrx)
-		trx.GET("", transaksiHandler.GetAllTrx)
-		trx.GET("/:id", transaksiHandler.GetTrxByID)
-	}
-
-	// Province & City Routes (Public)
-	provCity := router.Group("/provcity")
-	{
-		provCity.GET("/listprovincies", provCityHandler.GetListProvincies)
-		provCity.GET("/listcities/:prov_id", provCityHandler.GetListCities)
-		provCity.GET("/detailprovince/:prov_id", provCityHandler.GetDetailProvince)
-		provCity.GET("/detailcity/:city_id", provCityHandler.GetDetailCity)
-	}
+	// 4. Modular Route Registrations
+	RegisterAuthRoutes(router, authHandler)
+	RegisterUserRoutes(router, userHandler, alamatHandler)
+	RegisterTokoRoutes(router, tokoHandler)
+	RegisterCategoryRoutes(router, categoryHandler)
+	RegisterProductRoutes(router, produkHandler)
+	RegisterTrxRoutes(router, transaksiHandler)
+	RegisterProvCityRoutes(router, provCityHandler)
 }
