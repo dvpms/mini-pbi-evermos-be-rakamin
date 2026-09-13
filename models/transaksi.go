@@ -14,8 +14,8 @@ type Transaksi struct {
 	UpdatedAt        time.Time         `json:"updated_at,omitempty"`
 
 	// Relationships
-	AlamatKirim Alamat            `json:"alamat_kirim" gorm:"foreignKey:AlamatPengiriman"`
-	DetailTrx   []DetailTransaksi `json:"detail_trx" gorm:"foreignKey:TransaksiID"`
+	AlamatKirim Alamat            `json:"alamat_kirim" gorm:"foreignKey:AlamatPengiriman;references:ID"`
+	DetailTrx   []DetailTransaksi `json:"detail_trx" gorm:"foreignKey:TransaksiID;references:ID"`
 }
 
 // DetailTransaksi represents detail_transaksis table in database
@@ -30,8 +30,8 @@ type DetailTransaksi struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 
 	// Relationships
-	Product LogProduk          `json:"product" gorm:"foreignKey:LogProdukID"`
-	Toko    TokoSimpleResponse `json:"toko" gorm:"foreignKey:TokoID"`
+	Product LogProduk `json:"product" gorm:"foreignKey:LogProdukID;references:ID"`
+	Toko    Toko      `json:"toko" gorm:"foreignKey:TokoID;references:ID"`
 }
 
 // TransactionItemInput represents each item in checkout input

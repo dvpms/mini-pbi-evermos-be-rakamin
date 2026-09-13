@@ -20,6 +20,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	tokoRepo := repositories.NewTokoRepository(db)
 	alamatRepo := repositories.NewAlamatRepository(db)
 	categoryRepo := repositories.NewCategoryRepository(db)
+	produkRepo := repositories.NewProdukRepository(db)
 
 	// Services
 	authService := services.NewAuthService(userRepo, tokoRepo)
@@ -28,6 +29,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	provCityService := services.NewProvCityService()
 	tokoService := services.NewTokoService(tokoRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
+	produkService := services.NewProdukService(produkRepo, tokoRepo)
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -36,6 +38,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	provCityHandler := handlers.NewProvCityHandler(provCityService)
 	tokoHandler := handlers.NewTokoHandler(tokoService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	produkHandler := handlers.NewProdukHandler(produkService)
 
 	// Auth Routes (Public)
 	auth := router.Group("/auth")
@@ -90,6 +93,20 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		categoryAdmin.POST("", categoryHandler.CreateCategory)
 		categoryAdmin.PUT("/:id", categoryHandler.UpdateCategory)
 		categoryAdmin.DELETE("/:id", categoryHandler.DeleteCategory)
+	}
+
+	// Product Routes (Public for GET, Protected for Mutations)
+	product := router.Group("/product")
+	{
+		product.GET("", produkHandler.GetAllProduk)
+		product.GET("/:id", produkHandler.GetProdukByID)
+	}
+
+	productAuth := router.Group("/product", middleware.AuthMiddleware())
+	{
+		productAuth.POST("", produkHandler.CreateProduk)
+		productAuth.PUT("/:id", produkHandler.UpdateProduk)
+		productAuth.DELETE("/:id", produkHandler.DeleteProduk)
 	}
 
 	// Province & City Routes (Public)

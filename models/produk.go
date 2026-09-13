@@ -17,9 +17,9 @@ type Produk struct {
 	UpdatedAt     time.Time    `json:"updated_at,omitempty"`
 
 	// Relationships
-	Toko     TokoSimpleResponse     `json:"toko" gorm:"foreignKey:TokoID"`
-	Category CategorySimpleResponse `json:"category" gorm:"foreignKey:CategoryID"`
-	Photos   []FotoProduk           `json:"photos" gorm:"foreignKey:ProductID"`
+	Toko     Toko         `json:"toko" gorm:"foreignKey:TokoID;references:ID"`
+	Category Category     `json:"category" gorm:"foreignKey:CategoryID;references:ID"`
+	Photos   []FotoProduk `json:"photos" gorm:"foreignKey:ProductID;references:ID"`
 }
 
 // FotoProduk represents foto_produks table in database

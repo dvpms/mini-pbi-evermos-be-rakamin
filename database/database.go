@@ -73,6 +73,15 @@ func Migrate(db *gorm.DB) {
 		log.Fatalf("Database auto-migration failed: %v", err)
 	}
 	log.Println("Database auto-migration completed successfully")
+
+	// Seed initial categories if empty
+	var catCount int64
+	db.Model(&models.Category{}).Count(&catCount)
+	if catCount == 0 {
+		db.Create(&models.Category{NamaCategory: "Elektronik"})
+		db.Create(&models.Category{NamaCategory: "Pakaian"})
+		log.Println("Initial categories seeded")
+	}
 }
 
 
