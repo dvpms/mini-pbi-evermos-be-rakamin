@@ -207,7 +207,7 @@ Ketika `AUTO_MIGRATE=true` diaktifkan pada `.env`, aplikasi akan secara otomatis
 
 ## 🧪 Pengujian Otomatis (Newman & Postman)
 
-Koleksi Postman [`mini_project.postman_collection.json`](file:///c:/Users/UDevran/Downloads/Documents/BE-Evermos/code/mini-project-pbi/mini_project.postman_collection.json) telah dilengkapi dengan **36 request** dan **72 assertions** yang mencakup pengujian positif, negatif, isolasi kepemilikan, hingga transaksi stok.
+Koleksi Postman [`mini_project.postman_collection.json`](file:///c:/Users/UDevran/Downloads/Documents/BE-Evermos/code/mini-project-pbi/mini_project.postman_collection.json) telah dilengkapi dengan **36 skenario pengujian** dan **72 poin validasi (assertions)** yang mencakup pengujian alur positif (*happy path*), penanganan error/keamanan (*negative test*), isolasi kepemilikan data, hingga transaksi stok.
 
 ### Menjalankan via Newman CLI
 
@@ -235,6 +235,60 @@ newman run mini_project.postman_collection.json
 │ average response time: 677ms                                    │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### 📋 Ringkasan Skenario Pengujian (Bahasa Non-Teknis)
+
+Pengujian dibagi ke dalam 7 modul fungsional utama:
+
+#### 1. 🔐 Pendaftaran & Keamanan Akun (4 Skenario)
+- **Pendaftaran Pengguna Baru**: Calon pengguna berhasil mendaftar dan otomatis dibuatkan toko untuk berjualan.
+- **Pencegahan Akun Duplikat**: Sistem menolak pendaftaran jika nomor HP atau email sudah terdaftar sebelumnya.
+- **Masuk Akun (Login) Berhasil**: Pengguna dengan data yang benar berhasil masuk dan memperoleh akses digital resmi.
+- **Pencegahan Salah Kata Sandi**: Sistem menolak upaya masuk jika kata sandi salah demi keamanan akun.
+
+#### 2. 👤 Profil & Buku Alamat Pengiriman (7 Skenario)
+- **Melihat Profil Pribadi**: Pengguna dapat melihat data akun miliknya sendiri.
+- **Memperbarui Profil**: Pengguna dapat mengubah nama dan data kontak pribadi.
+- **Menambah Alamat Pengiriman**: Pengguna dapat menyimpan alamat baru untuk pengiriman barang belanjaan.
+- **Melihat Daftar Alamat**: Menampilkan seluruh alamat yang sudah tersimpan di akun pengguna.
+- **Melihat Rincian Alamat Tertentu**: Memeriksa detail alamat spesifik yang dipilih.
+- **Mengubah Data Alamat**: Pengguna dapat memperbaiki nama jalan, kode pos, atau informasi alamat.
+- **Menghapus Alamat**: Pengguna dapat menghapus alamat yang sudah tidak digunakan.
+
+#### 3. 🏬 Pengelolaan Toko Penjual (4 Skenario)
+- **Melihat Toko Pribadi**: Penjual dapat melihat rincian toko resmi miliknya.
+- **Melihat Toko Penjual Lain**: Pembeli dapat melihat profil toko lain saat hendak membeli barang.
+- **Menjelajahi Daftar Toko**: Menampilkan seluruh toko secara rapi per halaman (*pagination*).
+- **Memperbarui Informasi Toko & Logo**: Penjual dapat mengubah nama/deskripsi toko dan mengunggah foto logo toko.
+
+#### 4. 🗂️ Pengelompokan Kategori Barang (3 Skenario)
+- **Melihat Seluruh Kategori**: Pembeli dan penjual dapat melihat daftar kategori produk publik.
+- **Perlindungan Hak Akses Admin**: Sistem memblokir pengguna biasa yang mencoba menambah kategori (khusus Admin platform).
+- **Pengecekan Kategori Tidak Ada**: Sistem menampilkan pesan yang jelas jika kategori yang dicari tidak ditemukan.
+
+#### 5. 🛍️ Katalog Produk & Upload Foto (7 Skenario)
+- **Menambah Produk Baru + Upload Foto**: Penjual dapat memasang barang dagangan baru beserta multiple foto produk.
+- **Menjelajahi Seluruh Produk**: Katalog barang tampil rapi dan terorganisir per halaman.
+- **Pencarian & Filter Cerdas**: Pembeli dapat mencari barang berdasarkan nama serta batas harga minimum/maksimum.
+- **Melihat Rincian Lengkap Produk**: Menampilkan detail harga, deskripsi, stok, dan toko pemilik barang.
+- **Mengubah Informasi Produk**: Penjual dapat memperbarui harga, deskripsi, dan foto barang dagangannya.
+- **Menghapus Produk**: Penjual dapat menghapus produk yang sudah tidak dijual lagi.
+- **Validasi Produk Terhapus**: Memastikan produk yang sudah dihapus tidak bisa diakses kembali oleh pembeli.
+
+#### 6. 📍 Data Wilayah Pengiriman Indonesia (4 Skenario)
+- **Daftar Seluruh Provinsi**: Menampilkan daftar resmi seluruh provinsi di Indonesia.
+- **Daftar Kota/Kabupaten**: Menampilkan daftar kota/kabupaten sesuai provinsi yang dipilih.
+- **Rincian Nama Provinsi**: Memastikan data nama provinsi akurat.
+- **Rincian Nama Kota/Kabupaten**: Memastikan data nama kota/kabupaten akurat.
+
+#### 7. 💳 Transaksi Belanja & Checkout (7 Skenario)
+- **Persiapan Alamat Belanja**: Memastikan alamat pengiriman pembeli valid sebelum belanja.
+- **Persiapan Barang Belanja**: Memastikan barang dagangan siap dipesan.
+- **Checkout Pembelian Berhasil**: Pembelian sukses, stok barang otomatis terpotong, dan riwayat belanja tersimpan.
+- **Pencegahan Pembelian Melebihi Stok (*Zero Over-Selling*)**: Sistem otomatis menolak transaksi jika jumlah pesanan melebihi sisa stok di toko.
+- **Melihat Seluruh Riwayat Belanja**: Pengguna dapat melihat daftar transaksi yang pernah dilakukannya.
+- **Melihat Rincian Satu Transaksi**: Pengguna dapat melihat rincian barang, total bayar, dan alamat kirim pada pesanan tertentu.
+- **Pengecekan Transaksi Tidak Ada**: Sistem menolak akses ke nomor transaksi palsu atau tidak terdaftar.
 
 ---
 
