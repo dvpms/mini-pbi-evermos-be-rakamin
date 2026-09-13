@@ -1,0 +1,276 @@
+{
+	"info": {
+		"_postman_id": "e89c670a-6e11-4a7b-a192-f3e098901234",
+		"name": "Evermos Mini Project - Phase 2 (Auth)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "local",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_phone",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "password123",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const rand = Math.floor(Math.random() * 1000000);",
+									"const email = `testuser_${Date.now()}_${rand}@mail.com`;",
+									"const phone = `0812${Date.now().toString().slice(-8)}`;",
+									"pm.collectionVariables.set('test_email', email);",
+									"pm.collectionVariables.set('test_phone', phone);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Status is true and register succeeds', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.message).to.eql('Succeed to POST data');",
+									"    pm.expect(jsonData.data).to.eql('Register Succeed');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nama\": \"Test User Newman\",\n    \"kata_sandi\": \"{{test_password}}\",\n    \"no_telp\": \"{{test_phone}}\",\n    \"tanggal_Lahir\": \"02/01/2000\",\n    \"pekerjaan\": \"Backend Engineer\",\n    \"email\": \"{{test_email}}\",\n    \"id_provinsi\": \"11\",\n    \"id_kota\": \"1101\"\n}"
+						},
+						"url": {
+							"raw": "{{local}}/auth/register",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Duplicate User (Negative Test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 for duplicate registration', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Status is false with error details', function () {",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"    pm.expect(jsonData.errors).to.not.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nama\": \"Duplicate User\",\n    \"kata_sandi\": \"{{test_password}}\",\n    \"no_telp\": \"{{test_phone}}\",\n    \"tanggal_Lahir\": \"02/01/2000\",\n    \"pekerjaan\": \"Backend Engineer\",\n    \"email\": \"{{test_email}}\",\n    \"id_provinsi\": \"11\",\n    \"id_kota\": \"1101\"\n}"
+						},
+						"url": {
+							"raw": "{{local}}/auth/register",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User (Positive Test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 for valid login', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Login returns JWT token', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.data.token).to.not.be.empty;",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"no_telp\": \"{{test_phone}}\",\n    \"kata_sandi\": \"{{test_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{local}}/auth/login",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User Wrong Password (Negative Test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 for wrong password', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Status is false for failed login', function () {",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"no_telp\": \"{{test_phone}}\",\n    \"kata_sandi\": \"wrong_password_123\"\n}"
+						},
+						"url": {
+							"raw": "{{local}}/auth/login",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Protected Ping with Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 with valid JWT header', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.test('Middleware validates token correctly', function () {",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"    pm.expect(jsonData.message).to.eql('Auth middleware working');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/user/ping",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user",
+								"ping"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
