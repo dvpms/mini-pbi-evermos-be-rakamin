@@ -18,9 +18,10 @@ Proyek ini merupakan implementasi RESTful API Backend e-commerce untuk **Virtual
 3. [Teknologi yang Digunakan](#-teknologi-yang-digunakan)
 4. [Persyaratan Sistem](#-persyaratan-sistem)
 5. [Instalasi & Menjalankan Aplikasi](#-instalasi--menjalankan-aplikasi)
-6. [Pengujian Otomatis (Newman & Postman)](#-pengujian-otomatis-newman--postman)
-7. [Katalog Endpoint API](#-katalog-endpoint-api)
-8. [Standar & Aturan Bisnis (Soal & Ketentuan)](#-standar--aturan-bisnis-soal--ketentuan)
+6. [Database Seeder & Akun Default](#-database-seeder--akun-default)
+7. [Pengujian Otomatis (Newman & Postman)](#-pengujian-otomatis-newman--postman)
+8. [Katalog Endpoint API](#-katalog-endpoint-api)
+9. [Standar & Aturan Bisnis (Soal & Ketentuan)](#-standar--aturan-bisnis-soal--ketentuan)
 
 ---
 
@@ -39,6 +40,7 @@ Proyek ini merupakan implementasi RESTful API Backend e-commerce untuk **Virtual
   - Transaksi database atomik (`gorm.Transaction`) dengan *row-level locking* (`FOR UPDATE`) untuk mencegah *race condition* saat stok berkurang.
   - Pencatatan otomatis snapshot data produk ke tabel `log_produks` saat transaksi berhasil dibuat (Ketentuan #16 & #17).
   - Validasi kepemilikan alamat dan isolasi data riwayat transaksi per user.
+- 🌱 **Database Seeding Otomatis**: Inisialisasi data kategori default dan akun super admin secara instan saat migrasi dijalankan.
 
 ---
 
@@ -49,10 +51,11 @@ Proyek ini mengadopsi **Clean Architecture** berlapis untuk memastikan pemisahan
 ```
 mini-project-pbi/
 ├── config/             # Konfigurasi aplikasi & JWT helpers
-├── database/           # Inisialisasi GORM connection pool & database auto-migration
+├── database/           # Inisialisasi GORM connection pool, auto-migration & seeder
+│   ├── database.go
+│   └── seeder.go
 ├── docs/               # Dokumentasi pengujian, task checklist, dan spesifikasi soal
-│   ├── testing-guide.md
-│   
+│   └── testing-guide.md
 ├── handlers/           # Presentation Layer (HTTP Request/Response Controllers)
 │   ├── alamat_handler.go
 │   ├── auth_handler.go
@@ -112,7 +115,7 @@ mini-project-pbi/
 - **Language**: [Go (Golang)](https://golang.org/) 1.20+
 - **HTTP Framework**: [Gin Web Framework](https://github.com/gin-gonic/gin)
 - **ORM**: [GORM](https://gorm.io/)
-- **Database**: [MySQL 8.0](https://www.mysql.com/) hosted on [Aiven Cloud](https://aiven.io/)
+- **Database**: [MySQL 8.0](https://www.mysql.com/) / [Aiven Cloud MySQL](https://aiven.io/)
 - **Authentication**: JWT ([golang-jwt/jwt/v5](https://github.com/golang-jwt/jwt))
 - **Security**: [Bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt) Password Hashing
 - **Testing Runner**: [Newman CLI](https://www.npmjs.com/package/newman) & [Postman](https://www.postman.com/)
@@ -124,8 +127,9 @@ mini-project-pbi/
 Sebelum menjalankan proyek ini, pastikan sistem Anda telah terpasang:
 
 1. **Go** (versi 1.20 atau lebih baru)
-2. **Node.js** & **npm** (opsional, untuk menjalankan Newman CLI)
-3. **Git**
+2. **MySQL Server** (versi 8.0+) atau instance Cloud MySQL
+3. **Node.js** & **npm** (opsional, untuk menjalankan Newman CLI)
+4. **Git**
 
 ---
 
@@ -140,6 +144,8 @@ cd mini-project-pbi
 
 ### 2. Konfigurasi Environment (`.env`)
 
+Buat atau sesuaikan file `.env` pada direktori root proyek:
+
 ```env
 # Database Configuration
 DB_USER=root
@@ -151,10 +157,12 @@ DB_NAME=evermos_mini
 # Application Configuration
 JWT_SECRET="secret_evermos_mini_project_key_2025"
 PORT="8080"
-AUTO_MIGRATE=false
+AUTO_MIGRATE=true
 ```
 
-> **Catatan**: Ubah `AUTO_MIGRATE=true` jika Anda menghubungkan ke database baru yang kosong untuk menjalankan auto-migration skema tabel awal. Anda juga dapat menggunakan format `DATABASE_URL` jika menggunakan cloud database string (e.g. Aiven Cloud).
+> **Catatan**: 
+> - Set `AUTO_MIGRATE=true` saat pertama kali menjalankan aplikasi agar tabel database dibuat secara otomatis dan data seeder terisi.
+> - Aplikasi juga mendukung `DATABASE_URL` (format DSN URI / cloud connection string) sebagai alternatif `DB_*`.
 
 ### 3. Unduh Dependencies
 
@@ -169,6 +177,31 @@ go run main.go
 ```
 
 Server akan aktif dan siap menerima request pada `http://localhost:8080`.
+
+---
+
+## 🌱 Database Seeder & Akun Default
+
+Ketika `AUTO_MIGRATE=true` diaktifkan pada `.env`, aplikasi akan secara otomatis menjalankan seeder idempotensial (`database/seeder.go`):
+
+### 1. Akun Default Admin
+
+| Field | Nilai |
+| --- | --- |
+| **Nama** | Super Admin |
+| **Email** | `admin@evermos.com` |
+| **Password** | `admin123` |
+| **No. Telepon** | `081234567890` |
+| **Role** | `admin` *(Dapat mengelola CRUD kategori)* |
+| **Toko Default** | Evermos Official Store |
+
+### 2. Kategori Default
+
+1. **Elektronik**
+2. **Fashion**
+3. **Makanan & Minuman**
+4. **Kecantikan**
+5. **Perlengkapan Rumah**
 
 ---
 
