@@ -18,12 +18,19 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	// Repositories
 	userRepo := repositories.NewUserRepository(db)
 	tokoRepo := repositories.NewTokoRepository(db)
+	alamatRepo := repositories.NewAlamatRepository(db)
 
 	// Services
 	authService := services.NewAuthService(userRepo, tokoRepo)
+	userService := services.NewUserService(userRepo)
+	alamatService := services.NewAlamatService(alamatRepo)
+	provCityService := services.NewProvCityService()
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService)
+	userHandler := handlers.NewUserHandler(userService)
+	alamatHandler := handlers.NewAlamatHandler(alamatService)
+	provCityHandler := handlers.NewProvCityHandler(provCityService)
 
 	// Auth Routes (Public)
 	auth := router.Group("/auth")
@@ -32,10 +39,22 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		auth.POST("/login", authHandler.Login)
 	}
 
-	// Protected User Ping (for verifying Auth Middleware)
-	userProtected := router.Group("/user", middleware.AuthMiddleware())
+	// User Routes (Protected JWT)
+	user := router.Group("/user", middleware.AuthMiddleware())
 	{
-		userProtected.GET("/ping", func(c *gin.Context) {
+		// Profil
+		user.GET("", userHandler.GetProfile)
+		user.PUT("", userHandler.UpdateProfile)
+
+		// Alamat Kirim
+		user.GET("/alamat", alamatHandler.GetMyAlamat)
+		user.GET("/alamat/:id", alamatHandler.GetAlamatByID)
+		user.POST("/alamat", alamatHandler.CreateAlamat)
+		user.PUT("/alamat/:id", alamatHandler.UpdateAlamat)
+		user.DELETE("/alamat/:id", alamatHandler.DeleteAlamat)
+
+		// Ping test
+		user.GET("/ping", func(c *gin.Context) {
 			userID, _ := c.Get("user_id")
 			c.JSON(200, gin.H{
 				"status":  true,
@@ -43,5 +62,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 				"user_id": userID,
 			})
 		})
+	}
+
+	// Province & City Routes (Public)
+	provCity := router.Group("/provcity")
+	{
+		provCity.GET("/listprovincies", provCityHandler.GetListProvincies)
+		provCity.GET("/listcities/:prov_id", provCityHandler.GetListCities)
+		provCity.GET("/detailprovince/:prov_id", provCityHandler.GetDetailProvince)
+		provCity.GET("/detailcity/:city_id", provCityHandler.GetDetailCity)
 	}
 }
